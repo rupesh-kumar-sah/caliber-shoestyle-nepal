@@ -33,9 +33,9 @@ const Auth = () => {
       <main className="flex-1 flex items-center justify-center py-12 px-4">
         <Card className="w-full max-w-md animate-scale-in">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome to Caliber Shoes</CardTitle>
+            <CardTitle className="text-2xl">Welcome to StyleNepal</CardTitle>
             <CardDescription>
-              Sign in to your account or create a new one
+              Please approve the database migration to enable authentication
             </CardDescription>
           </CardHeader>
 
@@ -143,10 +143,10 @@ const Auth = () => {
               </TabsContent>
             </Tabs>
 
-            <div className="mt-6 rounded-lg bg-muted p-4 text-sm">
-              <p className="font-semibold mb-2">Note:</p>
+            <div className="mt-6 rounded-lg bg-accent/10 border border-accent p-4 text-sm">
+              <p className="font-semibold mb-2 text-accent">⚠️ Migration Required:</p>
               <p className="text-muted-foreground">
-                User authentication requires Lovable Cloud to be enabled for secure login and account management.
+                Please approve the database migration in the Cloud view (Storage tab) to create the necessary tables for authentication, products, cart, and orders.
               </p>
             </div>
           </CardContent>

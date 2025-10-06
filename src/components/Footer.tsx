@@ -12,11 +12,11 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <img src={logo} alt="Caliber Shoes" className="h-10 w-10" />
-              <span className="text-xl font-bold text-primary">Caliber Shoes</span>
+              <img src={logo} alt="StyleNepal" className="h-10 w-10" />
+              <span className="text-xl font-bold text-primary">StyleNepal</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Premium footwear for every style and occasion. Quality you can trust, comfort you can feel.
+              Your destination for premium fashion. Quality, style, and comfort in every product.
             </p>
             <div className="flex space-x-3">
               <a href="#" className="rounded-full bg-primary p-2 text-primary-foreground transition-smooth hover:bg-accent">
@@ -91,7 +91,7 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>info@calibershoes.com</span>
+                <span>info@stylenepal.com</span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
@@ -121,7 +121,7 @@ const Footer = () => {
 
         <div className="mt-8 border-t pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Caliber Shoes. All rights reserved.
+            © {new Date().getFullYear()} StyleNepal. All rights reserved.
           </p>
         </div>
       </div>

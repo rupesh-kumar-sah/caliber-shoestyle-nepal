@@ -1,20 +1,26 @@
 import { Link } from "react-router-dom";
-import { ShoppingCart, User, Search, Menu } from "lucide-react";
+import { ShoppingCart, User, Search, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import logo from "@/assets/logo.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
-  const [cartCount] = useState(0);
+  const cartCount = 0;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 transition-smooth hover:opacity-80">
-          <img src={logo} alt="Caliber Shoes" className="h-10 w-10" />
-          <span className="text-xl font-bold text-primary">Caliber Shoes</span>
+          <img src={logo} alt="StyleNepal" className="h-10 w-10" />
+          <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">StyleNepal</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -23,16 +29,10 @@ const Header = () => {
             Home
           </Link>
           <Link to="/products" className="text-sm font-medium transition-smooth hover:text-accent">
-            Products
+            Shop
           </Link>
-          <Link to="/categories" className="text-sm font-medium transition-smooth hover:text-accent">
-            Categories
-          </Link>
-          <Link to="/about" className="text-sm font-medium transition-smooth hover:text-accent">
-            About
-          </Link>
-          <Link to="/contact" className="text-sm font-medium transition-smooth hover:text-accent">
-            Contact
+          <Link to="/admin" className="text-sm font-medium transition-smooth hover:text-accent">
+            Admin
           </Link>
         </nav>
 
