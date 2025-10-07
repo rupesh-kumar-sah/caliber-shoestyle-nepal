@@ -4,8 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProductsManager } from '@/components/admin/ProductsManager';
-import { OrdersManager } from '@/components/admin/OrdersManager';
+import ProductsManager from '@/components/admin/ProductsManager';
+import OrdersManager from '@/components/admin/OrdersManager';
 import { Loader2 } from 'lucide-react';
 
 const AdminDashboard = () => {
