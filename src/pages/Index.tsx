@@ -2,13 +2,14 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Star, Truck, Shield, Headphones } from "lucide-react";
+import { Star, Truck, Shield, Headphones, Loader2 } from "lucide-react";
 
 const Index = () => {
-  const featuredProducts = products.slice(0, 4);
+  const { data: products, isLoading } = useProducts();
+  const featuredProducts = products?.slice(0, 4) || [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -75,17 +76,23 @@ const Index = () => {
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {featuredProducts.map((product, index) => (
-                <div key={product.id} style={{ animationDelay: `${index * 0.1}s` }}>
-                  <ProductCard
-                    id={product.id}
-                    name={product.name}
-                    price={product.price}
-                    image={product.image}
-                    category={product.category}
-                  />
+              {isLoading ? (
+                <div className="col-span-full flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
-              ))}
+              ) : (
+                featuredProducts.map((product, index) => (
+                  <div key={product.id} style={{ animationDelay: `${index * 0.1}s` }}>
+                    <ProductCard
+                      id={product.id}
+                      name={product.name}
+                      price={product.price}
+                      image={product.image_url}
+                      category={product.category}
+                    />
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="mt-12 text-center">

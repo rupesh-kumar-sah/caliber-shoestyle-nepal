@@ -1,11 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useState } from "react";
+import { useAddToCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface ProductCardProps {
-  id: number;
+  id: string;
   name: string;
   price: number;
   image: string;
@@ -14,6 +17,24 @@ interface ProductCardProps {
 
 const ProductCard = ({ id, name, price, image, category }: ProductCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const addToCart = useAddToCart();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      toast.error('Please sign in to add items to cart');
+      navigate('/auth');
+      return;
+    }
+
+    addToCart.mutate({
+      product_id: id,
+      quantity: 1,
+    });
+  };
 
   return (
     <Card className="group overflow-hidden transition-smooth hover:shadow-lg animate-scale-in">
@@ -55,9 +76,14 @@ const ProductCard = ({ id, name, price, image, category }: ProductCardProps) => 
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full" size="lg">
+        <Button 
+          className="w-full" 
+          size="lg" 
+          onClick={handleAddToCart}
+          disabled={addToCart.isPending}
+        >
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Add to Cart
+          {addToCart.isPending ? 'Adding...' : 'Add to Cart'}
         </Button>
       </CardFooter>
     </Card>

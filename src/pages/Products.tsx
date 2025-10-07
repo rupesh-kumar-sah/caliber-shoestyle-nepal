@@ -1,9 +1,10 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,12 +15,13 @@ import {
 import { Filter } from "lucide-react";
 
 const Products = () => {
+  const { data: products, isLoading } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("featured");
 
-  const filteredProducts = products.filter(
+  const filteredProducts = products?.filter(
     (product) => selectedCategory === "all" || product.category.toLowerCase() === selectedCategory
-  );
+  ) || [];
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "price-low") return a.price - b.price;
@@ -27,6 +29,18 @@ const Products = () => {
     if (sortBy === "name") return a.name.localeCompare(b.name);
     return 0;
   });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -102,7 +116,7 @@ const Products = () => {
                 id={product.id}
                 name={product.name}
                 price={product.price}
-                image={product.image}
+                image={product.image_url}
                 category={product.category}
               />
             ))}
