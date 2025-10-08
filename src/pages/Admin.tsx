@@ -4,23 +4,39 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lock, User } from "lucide-react";
-import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import AdminDashboard from "./AdminDashboard";
 
 const Admin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  const { signIn, user, isAdmin } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user && !isAdmin) {
+      navigate('/');
+    }
+  }, [user, isAdmin, navigate]);
+
+  if (user && isAdmin) {
+    return <AdminDashboard />;
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // This is just UI - real authentication needs Lovable Cloud
-    if (email === "rsah0123456@gmail.com" && password === "rupesh@0123456") {
-      toast.success("Login successful!");
-      // In a real app, this would redirect to admin dashboard
-    } else {
-      toast.error("Invalid credentials");
+    setLoading(true);
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      // Error handling is done in useAuth
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,15 +90,15 @@ const Admin = () => {
                 </div>
               </div>
 
-              <Button type="submit" variant="hero" className="w-full" size="lg">
-                Sign In
+              <Button type="submit" variant="hero" className="w-full" size="lg" disabled={loading}>
+                {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
 
             <div className="mt-6 rounded-lg bg-muted p-4 text-sm">
-              <p className="font-semibold mb-2">Note:</p>
+              <p className="font-semibold mb-2">Admin Access:</p>
               <p className="text-muted-foreground">
-                Full admin functionality including product management, order tracking, and user management requires connecting to Lovable Cloud for backend services.
+                Use your admin credentials to access the dashboard. Contact support if you need admin access.
               </p>
             </div>
           </CardContent>

@@ -33,7 +33,6 @@ const OrdersManager = () => {
         .from('orders')
         .select(`
           *,
-          profiles(full_name),
           order_items(
             quantity,
             price,
@@ -43,7 +42,24 @@ const OrdersManager = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Order[];
+      
+      // Manually fetch profiles for each order
+      const ordersWithProfiles = await Promise.all(
+        (data || []).map(async (order) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', order.user_id)
+            .single();
+          
+          return {
+            ...order,
+            profiles: profile
+          };
+        })
+      );
+      
+      return ordersWithProfiles as Order[];
     },
   });
 

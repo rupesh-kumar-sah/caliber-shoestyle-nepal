@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Mail, Lock, User as UserIcon } from "lucide-react";
-import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -15,15 +16,35 @@ const Auth = () => {
   const [signupName, setSignupName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  const { signIn, signUp } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info("Login functionality requires Lovable Cloud backend");
+    setLoading(true);
+    try {
+      await signIn(loginEmail, loginPassword);
+      navigate('/');
+    } catch (error) {
+      // Error handling is done in useAuth
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info("Signup functionality requires Lovable Cloud backend");
+    setLoading(true);
+    try {
+      await signUp(signupEmail, signupPassword, signupName);
+      navigate('/');
+    } catch (error) {
+      // Error handling is done in useAuth
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,7 +56,7 @@ const Auth = () => {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Welcome to StyleNepal</CardTitle>
             <CardDescription>
-              Please approve the database migration to enable authentication
+              Sign in to your account or create a new one
             </CardDescription>
           </CardHeader>
 
@@ -80,8 +101,8 @@ const Auth = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" variant="hero" className="w-full" size="lg">
-                    Sign In
+                  <Button type="submit" variant="hero" className="w-full" size="lg" disabled={loading}>
+                    {loading ? "Signing in..." : "Sign In"}
                   </Button>
                 </form>
               </TabsContent>
@@ -136,19 +157,12 @@ const Auth = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" variant="hero" className="w-full" size="lg">
-                    Create Account
+                  <Button type="submit" variant="hero" className="w-full" size="lg" disabled={loading}>
+                    {loading ? "Creating account..." : "Create Account"}
                   </Button>
                 </form>
               </TabsContent>
             </Tabs>
-
-            <div className="mt-6 rounded-lg bg-accent/10 border border-accent p-4 text-sm">
-              <p className="font-semibold mb-2 text-accent">⚠️ Migration Required:</p>
-              <p className="text-muted-foreground">
-                Please approve the database migration in the Cloud view (Storage tab) to create the necessary tables for authentication, products, cart, and orders.
-              </p>
-            </div>
           </CardContent>
         </Card>
       </main>
