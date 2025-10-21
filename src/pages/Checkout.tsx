@@ -29,6 +29,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [showQr, setShowQr] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [transactionId, setTransactionId] = useState('');
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -100,13 +101,24 @@ const Checkout = () => {
   };
 
   const handlePaymentComplete = async () => {
-    if (!orderId) return;
+    if (!orderId || !transactionId.trim()) {
+      toast.error('Please enter your transaction ID');
+      return;
+    }
     
     try {
+      // Update order with transaction ID
+      const { error } = await supabase
+        .from('orders')
+        .update({ transaction_id: transactionId })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
       // Clear cart after payment
       await clearCart.mutateAsync();
-      toast.success('Payment confirmed! Order placed successfully.');
-      navigate('/');
+      toast.success('Payment recorded! Your order has been placed.');
+      navigate('/orders');
     } catch (error: any) {
       toast.error(error.message || 'Failed to complete order');
     }
@@ -166,9 +178,27 @@ const Checkout = () => {
                         <li>Scan this QR code</li>
                         <li>Verify the amount (रू {total.toFixed(2)})</li>
                         <li>Complete the payment</li>
-                        <li>Click "I've Paid" below after payment</li>
+                        <li>Enter your Transaction ID below</li>
                       </ol>
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="transactionId" className="font-medium">
+                      Transaction ID / Payment ID *
+                    </Label>
+                    <Input
+                      id="transactionId"
+                      type="text"
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                      placeholder="Enter your eSewa transaction ID"
+                      required
+                      className="text-base"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      You can find this in your eSewa app after completing the payment
+                    </p>
                   </div>
 
                   <Button 
@@ -176,8 +206,9 @@ const Checkout = () => {
                     className="w-full"
                     size="lg"
                     variant="hero"
+                    disabled={!transactionId.trim()}
                   >
-                    I've Completed Payment
+                    Submit Payment
                   </Button>
                   
                   <Button 

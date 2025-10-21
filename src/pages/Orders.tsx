@@ -81,11 +81,12 @@ const Orders = () => {
                         Order #{order.id.slice(0, 8)}
                       </CardTitle>
                       <Badge variant={
-                        order.status === 'delivered' ? 'default' :
+                        order.status === 'completed' || order.status === 'accepted' ? 'default' :
                         order.status === 'pending' ? 'secondary' :
-                        'outline'
+                        order.status === 'payment_confirmed' ? 'secondary' :
+                        'destructive'
                       }>
-                        {order.status}
+                        {order.status.replace('_', ' ').toUpperCase()}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">

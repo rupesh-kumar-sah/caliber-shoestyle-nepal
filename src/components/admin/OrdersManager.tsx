@@ -1,9 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Check, X, Ban } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface Order {
   id: string;
@@ -12,6 +14,7 @@ interface Order {
   status: string;
   shipping_address: string;
   phone: string;
+  transaction_id: string | null;
   created_at: string;
   profiles?: {
     full_name: string;
@@ -26,6 +29,8 @@ interface Order {
 }
 
 const OrdersManager = () => {
+  const queryClient = useQueryClient();
+  
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
@@ -71,17 +76,43 @@ const OrdersManager = () => {
     );
   }
 
+  const updateOrderStatus = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', orderId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast.success('Order status updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to update order status');
+    },
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
+      case 'accepted':
         return 'bg-green-500';
+      case 'payment_confirmed':
+        return 'bg-blue-500';
       case 'pending':
         return 'bg-yellow-500';
+      case 'rejected':
       case 'cancelled':
         return 'bg-red-500';
       default:
         return 'bg-gray-500';
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    return status.replace('_', ' ').toUpperCase();
   };
 
   return (
@@ -99,7 +130,7 @@ const OrdersManager = () => {
                 </p>
               </div>
               <Badge className={getStatusColor(order.status)}>
-                {order.status}
+                {getStatusLabel(order.status)}
               </Badge>
             </div>
             
@@ -111,6 +142,10 @@ const OrdersManager = () => {
               <div>
                 <p className="text-sm font-medium">Phone</p>
                 <p className="text-sm text-muted-foreground">{order.phone}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Transaction ID</p>
+                <p className="text-sm text-muted-foreground">{order.transaction_id || 'Not provided'}</p>
               </div>
               <div className="md:col-span-2">
                 <p className="text-sm font-medium">Shipping Address</p>
@@ -131,6 +166,68 @@ const OrdersManager = () => {
               <div className="border-t mt-2 pt-2 flex justify-between font-bold">
                 <span>Total</span>
                 <span>रू {order.total_amount.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Admin Actions */}
+            <div className="border-t pt-4 mt-4">
+              <p className="text-sm font-medium mb-3">Admin Actions</p>
+              <div className="flex flex-wrap gap-2">
+                {order.status === 'pending' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateOrderStatus.mutate({ orderId: order.id, status: 'payment_confirmed' })}
+                    disabled={updateOrderStatus.isPending}
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Confirm Payment
+                  </Button>
+                )}
+                {order.status === 'payment_confirmed' && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => updateOrderStatus.mutate({ orderId: order.id, status: 'accepted' })}
+                      disabled={updateOrderStatus.isPending}
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Accept Order
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => updateOrderStatus.mutate({ orderId: order.id, status: 'rejected' })}
+                      disabled={updateOrderStatus.isPending}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Reject Order
+                    </Button>
+                  </>
+                )}
+                {(order.status === 'pending' || order.status === 'payment_confirmed' || order.status === 'accepted') && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateOrderStatus.mutate({ orderId: order.id, status: 'cancelled' })}
+                    disabled={updateOrderStatus.isPending}
+                  >
+                    <Ban className="h-4 w-4 mr-1" />
+                    Cancel Order
+                  </Button>
+                )}
+                {order.status === 'accepted' && (
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => updateOrderStatus.mutate({ orderId: order.id, status: 'completed' })}
+                    disabled={updateOrderStatus.isPending}
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Mark Completed
+                  </Button>
+                )}
               </div>
             </div>
           </Card>
