@@ -1,18 +1,34 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { products } from "@/data/products";
 import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
-import { ShoppingCart, Heart, Truck, Shield, ArrowLeft } from "lucide-react";
+import { ShoppingCart, Heart, Truck, Shield, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAllProducts } from "@/hooks/useProducts";
+import { useAddToCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const product = products.find((p) => p.id === Number(id));
-  const [selectedSize, setSelectedSize] = useState<number | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const { data: products, isLoading } = useAllProducts();
+  const addToCart = useAddToCart();
+  const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
+
+  const product = products?.find((p) => p.id === id);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -31,16 +47,16 @@ const ProductDetail = () => {
     );
   }
 
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      toast.error("Please select a size");
+  const handleAddToCart = async () => {
+    if (!user) {
+      toast.error("Please login to add items to cart");
       return;
     }
-    if (!selectedColor) {
-      toast.error("Please select a color");
-      return;
-    }
-    toast.success(`Added ${quantity} item(s) to cart`);
+    
+    addToCart.mutate({
+      product_id: product.id,
+      quantity
+    });
   };
 
   return (
@@ -59,7 +75,7 @@ const ProductDetail = () => {
             <div className="animate-fade-in">
               <div className="overflow-hidden rounded-lg bg-muted">
                 <img
-                  src={product.image}
+                  src={product.image_url}
                   alt={product.name}
                   className="h-full w-full object-cover"
                 />
@@ -75,42 +91,9 @@ const ProductDetail = () => {
               </div>
 
               <h1 className="mb-4 text-4xl font-bold">{product.name}</h1>
-              <p className="mb-6 text-3xl font-bold text-accent">${product.price}</p>
+              <p className="mb-6 text-3xl font-bold text-accent">NPR {product.price}</p>
 
               <p className="mb-8 text-lg text-muted-foreground">{product.description}</p>
-
-              {/* Size Selection */}
-              <div className="mb-6">
-                <h3 className="mb-3 text-sm font-semibold uppercase">Select Size</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
-                    <Button
-                      key={size}
-                      variant={selectedSize === size ? "default" : "outline"}
-                      onClick={() => setSelectedSize(size)}
-                      className="h-12 w-12"
-                    >
-                      {size}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Color Selection */}
-              <div className="mb-6">
-                <h3 className="mb-3 text-sm font-semibold uppercase">Select Color</h3>
-                <div className="flex gap-2">
-                  {product.colors.map((color) => (
-                    <Button
-                      key={color}
-                      variant={selectedColor === color ? "default" : "outline"}
-                      onClick={() => setSelectedColor(color)}
-                    >
-                      {color}
-                    </Button>
-                  ))}
-                </div>
-              </div>
 
               {/* Quantity */}
               <div className="mb-8">
