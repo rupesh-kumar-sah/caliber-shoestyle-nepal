@@ -28,7 +28,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Free Shipping</h3>
-                  <p className="text-sm text-muted-foreground">On orders over $100</p>
+                  <p className="text-sm text-muted-foreground">On orders over रू 13,000</p>
                 </div>
               </div>
 

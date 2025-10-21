@@ -72,7 +72,7 @@ const ProductCard = ({ id, name, price, image, category }: ProductCardProps) => 
             {name}
           </h3>
         </Link>
-        <p className="text-2xl font-bold text-accent">${price}</p>
+        <p className="text-2xl font-bold text-accent">रू {price.toFixed(2)}</p>
       </CardContent>
 
       <CardFooter className="p-4 pt-0">

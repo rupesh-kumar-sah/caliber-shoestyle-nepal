@@ -19,7 +19,7 @@ export const products: Product[] = [
   {
     id: 1,
     name: "Classic Canvas Sneakers",
-    price: 89.99,
+    price: 12000,
     image: product1,
     category: "Casual",
     description: "Comfortable and stylish canvas sneakers perfect for everyday wear. Features breathable material and cushioned insole.",
@@ -30,7 +30,7 @@ export const products: Product[] = [
   {
     id: 2,
     name: "Pro Running Shoes",
-    price: 129.99,
+    price: 17000,
     image: product2,
     category: "Athletic",
     description: "High-performance running shoes with advanced cushioning technology. Designed for serious runners seeking comfort and speed.",
@@ -41,7 +41,7 @@ export const products: Product[] = [
   {
     id: 3,
     name: "Oxford Dress Shoes",
-    price: 159.99,
+    price: 21000,
     image: product3,
     category: "Formal",
     description: "Premium leather oxford shoes for professional occasions. Elegant design with superior craftsmanship.",
@@ -52,7 +52,7 @@ export const products: Product[] = [
   {
     id: 4,
     name: "High-Top Basketball",
-    price: 149.99,
+    price: 20000,
     image: product4,
     category: "Athletic",
     description: "Performance basketball shoes with ankle support and excellent traction. Built for the court.",

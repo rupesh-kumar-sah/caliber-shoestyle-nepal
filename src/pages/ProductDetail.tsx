@@ -132,7 +132,7 @@ const ProductDetail = () => {
               <div className="space-y-3 border-t pt-6">
                 <div className="flex items-center gap-3">
                   <Truck className="h-5 w-5 text-accent" />
-                  <span className="text-sm">Free shipping on orders over $100</span>
+                  <span className="text-sm">Free shipping on orders over रू 13,000</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-accent" />
