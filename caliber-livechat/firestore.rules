@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own conversations
+    match /conversations/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Users can read and write messages in their own conversations
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Admins can read all conversations and messages
+    match /conversations/{userId} {
+      allow read: if request.auth != null && request.auth.token.admin == true;
+
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null && request.auth.token.admin == true;
+      }
+    }
+
+    // Public access for admin authentication check
+    match /admin/{document} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Allow unauthenticated reads for chat configuration
+    match /config/{document} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+  }
+}

@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caliber Shoes - Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .sidebar-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .admin-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(39, 174, 96, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
+        }
+
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .conversation-item {
+            padding: 15px;
+            margin-bottom: 8px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .conversation-item:hover {
+            background: #f8f9fa;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .conversation-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .conversation-user {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .conversation-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-left: auto;
+        }
+
+        .conversation-last-message {
+            font-size: 13px;
+            opacity: 0.8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .conversation-item.active .conversation-last-message {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .unread-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        /* Main Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .chat-header {
+            padding: 20px 25px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: between;
+        }
+
+        .chat-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .chat-user-details h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .chat-user-status {
+            font-size: 12px;
+            color: #27ae60;
+        }
+
+        .chat-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .control-button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .control-button:hover {
+            background: #f8f9fa;
+        }
+
+        .control-button.active {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fafbfc;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.admin, .message.ai {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 60%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.admin .message-bubble {
+            background: #e74c3c;
+            color: white;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.ai .message-bubble {
+            background: white;
+            color: #2c3e50;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .message.user .message-time {
+            text-align: right;
+        }
+
+        .message.admin .message-time,
+        .message.ai .message-time {
+            text-align: left;
+        }
+
+        .sender-label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        .message.admin .sender-label {
+            color: #e74c3c;
+        }
+
+        .message.ai .sender-label {
+            color: #3498db;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            width: 45px;
+            height: 45px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            color: #2c3e50;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h1 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .login-box p {
+            margin-bottom: 30px;
+            opacity: 0.7;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .login-input:focus {
+            border-color: #667eea;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .stats-bar {
+            background: #f8f9fa;
+            padding: 15px 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-number {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 200px;
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .conversations-list {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+
+            .conversation-item {
+                min-width: 250px;
+                margin-right: 10px;
+            }
+
+            .message-bubble {
+                max-width: 80%;
+            }
+        }
+
+        /* Loading states */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e9ecef;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: #6c757d;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h1>🛍️ Caliber Admin</h1>
+            <p>Sign in to manage customer conversations</p>
+
+            <input
+                type="email"
+                class="login-input"
+                id="adminEmail"
+                placeholder="Admin Email"
+                value="admin@calibershoes.com"
+            >
+
+            <input
+                type="password"
+                class="login-input"
+                id="adminPassword"
+                placeholder="Password"
+                value="admin123"
+            >
+
+            <button class="login-button" id="loginButton">
+                Sign In to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <div class="dashboard-container" id="dashboardContainer" style="display: none;">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>Customer Conversations</h1>
+                <p>Real-time chat management</p>
+                <div class="admin-status">
+                    <div class="status-dot"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+
+            <div class="conversations-list" id="conversationsList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading conversations...
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    Total Conversations: <span class="stat-number" id="totalConversations">0</span>
+                </div>
+                <div class="stat-item">
+                    Active Now: <span class="stat-number" id="activeConversations">0</span>
+                </div>
+                <div class="stat-item">
+                    Unread: <span class="stat-number" id="unreadMessages">0</span>
+                </div>
+            </div>
+
+            <div class="chat-header">
+                <div class="chat-user-info">
+                    <div class="chat-user-avatar" id="chatUserAvatar">U</div>
+                    <div class="chat-user-details">
+                        <h3 id="chatUserName">Select a conversation</h3>
+                        <div class="chat-user-status" id="chatUserStatus">No conversation selected</div>
+                    </div>
+                </div>
+
+                <div class="chat-controls">
+                    <button class="control-button" id="aiModeBtn">🤖 AI Mode</button>
+                    <button class="control-button active" id="manualModeBtn">👨‍💼 Manual</button>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <h3>Select a conversation</h3>
+                    <p>Choose a conversation from the sidebar to start viewing messages</p>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <textarea
+                    class="message-input"
+                    id="messageInput"
+                    placeholder="Type your response..."
+                    rows="1"
+                    disabled
+                ></textarea>
+                <button class="send-button" id="sendButton" disabled>
+                    ➤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase configuration (replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "your-app-id"
+        };
+
+        // DOM elements
+        const loginContainer = document.getElementById('loginContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        const loginButton = document.getElementById('loginButton');
+        const adminEmail = document.getElementById('adminEmail');
+        const adminPassword = document.getElementById('adminPassword');
+
+        const conversationsList = document.getElementById('conversationsList');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+
+        const chatUserAvatar = document.getElementById('chatUserAvatar');
+        const chatUserName = document.getElementById('chatUserName');
+        const chatUserStatus = document.getElementById('chatUserStatus');
+
+        const aiModeBtn = document.getElementById('aiModeBtn');
+        const manualModeBtn = document.getElementById('manualModeBtn');
+
+        const totalConversations = document.getElementById('totalConversations');
+        const activeConversations = document.getElementById('activeConversations');
+        const unreadMessages = document.getElementById('unreadMessages');
+
+        // State
+        let currentUser = null;
+        let selectedConversation = null;
+        let conversations = [];
+        let isManualMode = true;
+
+        // Initialize Firebase (replace with actual Firebase SDK)
+        console.log('Admin dashboard loaded - waiting for Firebase configuration');
+
+        // Mock authentication (replace with actual Firebase Auth)
+        function mockAuth(email, password) {
+            // Simple mock authentication
+            if (email === 'admin@calibershoes.com' && password === 'admin123') {
+                return Promise.resolve({
+                    uid: 'admin_' + Date.now(),
+                    email: email,
+                    admin: true
+                });
+            } else {
+                return Promise.reject(new Error('Invalid credentials'));
+            }
+        }
+
+        // Login function
+        async function login() {
+            const email = adminEmail.value;
+            const password = adminPassword.value;
+
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+
+            loginButton.textContent = 'Signing in...';
+            loginButton.disabled = true;
+
+            try {
+                const user = await mockAuth(email, password);
+                currentUser = user;
+
+                loginContainer.style.display = 'none';
+                dashboardContainer.style.display = 'flex';
+
+                // Update admin status
+                await updateAdminStatus(true);
+
+                // Load conversations
+                loadConversations();
+
+                console.log('Admin logged in successfully');
+
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed: ' + error.message);
+                loginButton.textContent = 'Sign In to Dashboard';
+                loginButton.disabled = false;
+            }
+        }
+
+        // Update admin online status
+        async function updateAdminStatus(online) {
+            try {
+                console.log('Updating admin status:', online);
+                // Replace with actual Firebase function call
+            } catch (error) {
+                console.error('Error updating admin status:', error);
+            }
+        }
+
+        // Load all conversations
+        async function loadConversations() {
+            try {
+                conversationsList.innerHTML = '<div class="loading"><div class="spinner"></div>Loading conversations...</div>';
+
+                // Mock conversations data (replace with actual Firebase call)
+                setTimeout(() => {
+                    conversations = [
+                        {
+                            id: 'user_1',
+                            userId: 'user_1',
+                            lastMessage: 'Hi, I need help with shoe sizes',
+                            lastMessageTime: new Date(Date.now() - 1000 * 60 * 5),
+                            lastSender: 'user',
+                            unreadCount: 2,
+                            adminActive: false
+                        },
+                        {
+                            id: 'user_2',
+                            userId: 'user_2',
+                            lastMessage: 'Thank you for your help!',
+                            lastMessageTime: new Date(Date.now() - 1000 * 60 * 15),
+                            lastSender: 'user',
+                            unreadCount: 0,
+                            adminActive: true
+                        },
+                        {
+                            id: 'user_3',
+                            userId: 'user_3',
+                            lastMessage: 'Do you have this in blue?',
+                            lastMessageTime: new Date(Date.now() - 1000 * 60 * 30),
+                            lastSender: 'user',
+                            unreadCount: 1,
+                            adminActive: false
+                        }
+                    ];
+
+                    renderConversations();
+                    updateStats();
+                }, 1000);
+
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                conversationsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><h3>Error loading conversations</h3></div>';
+            }
+        }
+
+        // Render conversations list
+        function renderConversations() {
+            conversationsList.innerHTML = '';
+
+            if (conversations.length === 0) {
+                conversationsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><h3>No conversations yet</h3><p>Conversations will appear here when customers start chatting</p></div>';
+                return;
+            }
+
+            conversations.forEach(conv => {
+                const item = document.createElement('div');
+                item.className = `conversation-item ${selectedConversation?.id === conv.id ? 'active' : ''}`;
+                item.onclick = () => selectConversation(conv);
+
+                const timeString = formatTime(conv.lastMessageTime);
+
+                item.innerHTML = `
+                    <div class="conversation-header">
+                        <div class="conversation-user">User ${conv.userId.split('_')[1]}</div>
+                        <div class="conversation-time">${timeString}</div>
+                    </div>
+                    <div class="conversation-last-message">${conv.lastMessage}</div>
+                    ${conv.unreadCount > 0 ? `<div class="unread-badge">${conv.unreadCount}</div>` : ''}
+                `;
+
+                conversationsList.appendChild(item);
+            });
+        }
+
+        // Select conversation
+        function selectConversation(conversation) {
+            selectedConversation = conversation;
+
+            // Update UI
+            chatUserAvatar.textContent = 'U' + conversation.userId.split('_')[1];
+            chatUserName.textContent = `User ${conversation.userId.split('_')[1]}`;
+            chatUserStatus.textContent = conversation.adminActive ? 'Active conversation' : 'Waiting for response';
+
+            // Enable input
+            messageInput.disabled = false;
+            messageInput.placeholder = 'Type your response...';
+            messageInput.focus();
+
+            // Load messages for this conversation
+            loadMessages(conversation.id);
+
+            // Update active state in list
+            renderConversations();
+        }
+
+        // Load messages for selected conversation
+        async function loadMessages(conversationId) {
+            try {
+                messagesContainer.innerHTML = '<div class="loading"><div class="spinner"></div>Loading messages...</div>';
+
+                // Mock messages (replace with actual Firebase call)
+                setTimeout(() => {
+                    const mockMessages = [
+                        {
+                            id: '1',
+                            text: 'Hi, I need help finding the right shoe size',
+                            sender: 'user',
+                            timestamp: new Date(Date.now() - 1000 * 60 * 10)
+                        },
+                        {
+                            id: '2',
+                            text: 'Hi! I\'d be happy to help you find the perfect fit. Can you tell me which shoe model you\'re interested in?',
+                            sender: 'ai',
+                            timestamp: new Date(Date.now() - 1000 * 60 * 9)
+                        },
+                        {
+                            id: '3',
+                            text: 'I\'m looking at the Pro Running Shoes',
+                            sender: 'user',
+                            timestamp: new Date(Date.now() - 1000 * 60 * 5)
+                        }
+                    ];
+
+                    renderMessages(mockMessages);
+                }, 500);
+
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                messagesContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><h3>Error loading messages</h3></div>';
+            }
+        }
+
+        // Render messages
+        function renderMessages(messages) {
+            messagesContainer.innerHTML = '';
+
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><h3>No messages yet</h3><p>Start the conversation by sending a message below</p></div>';
+                return;
+            }
+
+            messages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${message.sender}`;
+
+                const timeString = formatTime(new Date(message.timestamp));
+
+                messageDiv.innerHTML = `
+                    <div class="message-bubble">
+                        ${message.sender !== 'user' ? `<div class="sender-label">${message.sender === 'ai' ? 'Caliber AI' : 'You'}</div>` : ''}
+                        <div>${message.text}</div>
+                        <div class="message-time">${timeString}</div>
+                    </div>
+                `;
+
+                messagesContainer.appendChild(messageDiv);
+            });
+
+            // Scroll to bottom
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
+        }
+
+        // Send message
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text || !selectedConversation) return;
+
+            // Clear input
+            messageInput.value = '';
+
+            try {
+                // Add message to UI immediately
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message admin';
+
+                messageDiv.innerHTML = `
+                    <div class="message-bubble">
+                        <div class="sender-label">You</div>
+                        <div>${text}</div>
+                        <div class="message-time">${formatTime(new Date())}</div>
+                    </div>
+                `;
+
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                // Send to Firebase (replace with actual Firebase call)
+                console.log('Sending admin message:', {
+                    userId: selectedConversation.id,
+                    message: text,
+                    sender: 'admin'
+                });
+
+                // Update conversation in list
+                const conv = conversations.find(c => c.id === selectedConversation.id);
+                if (conv) {
+                    conv.lastMessage = text;
+                    conv.lastMessageTime = new Date();
+                    conv.lastSender = 'admin';
+                    conv.adminActive = true;
+                    renderConversations();
+                }
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Error sending message: ' + error.message);
+            }
+        }
+
+        // Format time
+        function formatTime(date) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Update stats
+        function updateStats() {
+            totalConversations.textContent = conversations.length;
+            activeConversations.textContent = conversations.filter(c => c.adminActive).length;
+            unreadMessages.textContent = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+        }
+
+        // Event listeners
+        loginButton.addEventListener('click', login);
+
+        adminEmail.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+
+        adminPassword.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        aiModeBtn.addEventListener('click', () => {
+            isManualMode = false;
+            aiModeBtn.classList.add('active');
+            manualModeBtn.classList.remove('active');
+            messageInput.disabled = true;
+            messageInput.placeholder = 'AI mode active - automatic responses';
+        });
+
+        manualModeBtn.addEventListener('click', () => {
+            isManualMode = true;
+            manualModeBtn.classList.add('active');
+            aiModeBtn.classList.remove('active');
+            messageInput.disabled = false;
+            messageInput.placeholder = 'Type your response...';
+        });
+
+        // Auto-load conversations every 30 seconds (replace with real-time listeners)
+        setInterval(loadConversations, 30000);
+
+        console.log('Caliber Shoes Admin Dashboard Loaded Successfully! 🎉');
+    </script>
+</body>
+</html>
