@@ -9,6 +9,28 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Package } from "lucide-react";
 
+interface OrderItem {
+  id: string;
+  quantity: number;
+  price: number;
+  size?: string;
+  color?: string;
+  products?: {
+    name: string;
+    image_url: string;
+  };
+}
+
+interface Order {
+  id: string;
+  total_amount: number;
+  status: string;
+  shipping_address: string;
+  phone: string;
+  created_at: string;
+  order_items?: OrderItem[];
+}
+
 const Orders = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -73,7 +95,7 @@ const Orders = () => {
             </Card>
           ) : (
             <div className="space-y-4">
-              {orders.map((order: any) => (
+              {orders.map((order: Order) => (
                 <Card key={order.id}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -99,7 +121,7 @@ const Orders = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {order.order_items?.map((item: any) => (
+                      {order.order_items?.map((item: OrderItem) => (
                         <div key={item.id} className="flex items-center gap-4 pb-3 border-b last:border-0">
                           <img 
                             src={item.products?.image_url} 

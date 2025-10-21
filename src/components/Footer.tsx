@@ -12,8 +12,8 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <img src={logo} alt="StyleNepal" className="h-10 w-10" />
-              <span className="text-xl font-bold text-primary">StyleNepal</span>
+              <img src={logo} alt="Caliber Shoes" className="h-10 w-10" />
+              <span className="text-xl font-bold text-primary">Caliber Shoes</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Your destination for premium fashion. Quality, style, and comfort in every product.
@@ -77,11 +77,6 @@ const Footer = () => {
                   FAQ
                 </Link>
               </li>
-              <li>
-                <Link to="/admin" className="text-sm text-muted-foreground transition-smooth hover:text-accent">
-                  Admin Login
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -91,15 +86,15 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>info@stylenepal.com</span>
+                <span>support@calibershoes.com</span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
-                <span>+1 (555) 123-4567</span>
+                <span>+977-9800000000</span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                <span>Kathmandu, Nepal</span>
+                <span>Caliber Shoes HQ, Kathmandu, Nepal</span>
               </div>
               
               <div className="pt-4">
@@ -121,7 +116,7 @@ const Footer = () => {
 
         <div className="mt-8 border-t pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} StyleNepal. All rights reserved.
+            © {new Date().getFullYear()} Caliber Shoes. All rights reserved.
           </p>
         </div>
       </div>

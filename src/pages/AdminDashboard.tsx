@@ -8,7 +8,8 @@ import ProductsManager from '@/components/admin/ProductsManager';
 import OrdersManager from '@/components/admin/OrdersManager';
 import { SiteSettingsManager } from '@/components/admin/SiteSettingsManager';
 import { EsewaSettings } from '@/components/admin/EsewaSettings';
-import { Loader2, Package, ShoppingCart, Settings, QrCode } from 'lucide-react';
+import ContentManager from '@/components/admin/ContentManager';
+import { Loader2, Package, ShoppingCart, Settings, QrCode, FileText } from 'lucide-react';
 
 const AdminDashboard = () => {
   const { user, isAdmin, loading } = useAuth();
@@ -40,7 +41,7 @@ const AdminDashboard = () => {
           <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
           
           <Tabs defaultValue="products" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="products" className="flex items-center gap-2">
                 <Package className="h-4 w-4" />
                 Products
@@ -48,6 +49,10 @@ const AdminDashboard = () => {
               <TabsTrigger value="orders" className="flex items-center gap-2">
                 <ShoppingCart className="h-4 w-4" />
                 Orders
+              </TabsTrigger>
+              <TabsTrigger value="content" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Content
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
@@ -65,6 +70,10 @@ const AdminDashboard = () => {
             
             <TabsContent value="orders">
               <OrdersManager />
+            </TabsContent>
+
+            <TabsContent value="content">
+              <ContentManager />
             </TabsContent>
 
             <TabsContent value="settings">

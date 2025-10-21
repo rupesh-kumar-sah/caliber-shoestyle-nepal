@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Loader2, Pencil, Trash2, Plus } from 'lucide-react';
+import { Loader2, Pencil, Trash2, Plus, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ProductsManager = () => {
@@ -25,6 +25,8 @@ const ProductsManager = () => {
     category: '',
     in_stock: true,
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   const resetForm = () => {
     setFormData({
@@ -36,6 +38,8 @@ const ProductsManager = () => {
       in_stock: true,
     });
     setEditingProduct(null);
+    setSelectedFile(null);
+    setImagePreview('');
   };
 
   const handleEdit = (product: Product) => {
@@ -53,16 +57,34 @@ const ProductsManager = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      if (editingProduct) {
-        await updateProduct.mutateAsync({ id: editingProduct.id, ...formData });
-      } else {
-        await createProduct.mutateAsync(formData);
+      const submitData = { ...formData };
+
+      // Handle file upload
+      if (selectedFile) {
+        const base64 = await convertToBase64(selectedFile);
+        submitData.image_url = base64;
       }
+
+      // Validate that either file or URL is provided
+      if (!submitData.image_url) {
+        toast.error('Please provide either an image file or image URL');
+        return;
+      }
+
+      if (editingProduct) {
+        await updateProduct.mutateAsync({ id: editingProduct.id, ...submitData });
+      } else {
+        await createProduct.mutateAsync(submitData);
+      }
+
       setIsDialogOpen(false);
       resetForm();
+      toast.success(editingProduct ? 'Product updated successfully' : 'Product created successfully');
     } catch (error) {
       console.error('Error saving product:', error);
+      toast.error('Failed to save product');
     }
   };
 
@@ -70,6 +92,45 @@ const ProductsManager = () => {
     if (confirm('Are you sure you want to delete this product?')) {
       await deleteProduct.mutateAsync(id);
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select a valid image file');
+        return;
+      }
+
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size must be less than 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
+      // Clear the image URL field when file is selected
+      setFormData({ ...formData, image_url: '' });
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedFile(null);
+    setImagePreview('');
+    // Reset file input
+    const fileInput = document.getElementById('image_upload') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   if (isLoading) {
@@ -130,14 +191,80 @@ const ProductsManager = () => {
                 />
               </div>
               
-              <div>
-                <Label htmlFor="image_url">Image URL</Label>
-                <Input
-                  id="image_url"
-                  required
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                />
+              {/* Image Section */}
+              <div className="space-y-3">
+                <Label>Product Image</Label>
+
+                {/* Image Preview */}
+                {(imagePreview || formData.image_url) && (
+                  <div className="relative inline-block">
+                    <img
+                      src={imagePreview || formData.image_url}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-lg border"
+                    />
+                    {(imagePreview || selectedFile) && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                        onClick={removeImage}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {/* File Upload */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="image_upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('image_upload')?.click()}
+                      className="w-full"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      {selectedFile ? selectedFile.name : 'Upload Image'}
+                    </Button>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">Or</span>
+                    </div>
+                  </div>
+
+                  {/* Image URL Input */}
+                  <Input
+                    id="image_url"
+                    placeholder="Enter image URL"
+                    value={formData.image_url}
+                    onChange={(e) => {
+                      setFormData({ ...formData, image_url: e.target.value });
+                      if (e.target.value) {
+                        removeImage();
+                      }
+                    }}
+                    disabled={!!selectedFile}
+                  />
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Upload an image file (max 5MB) or provide an image URL
+                </p>
               </div>
               
               <div>

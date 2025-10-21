@@ -49,8 +49,8 @@ export const EsewaSettings = () => {
 
       setEsewaData({ ...esewaData, image_url: publicUrl });
       toast.success('QR code uploaded successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to upload QR code');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Failed to upload QR code');
     } finally {
       setUploading(false);
     }

@@ -77,8 +77,8 @@ export const SiteSettingsManager = () => {
 
       setSiteInfoData({ ...siteInfoData, logo_url: publicUrl });
       toast.success('Logo uploaded successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to upload logo');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Failed to upload logo');
     } finally {
       setUploading(false);
     }

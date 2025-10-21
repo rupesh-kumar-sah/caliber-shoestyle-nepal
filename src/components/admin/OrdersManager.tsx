@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, X, Ban } from 'lucide-react';
+import { Loader2, Check, X, Ban, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -68,14 +68,6 @@ const OrdersManager = () => {
     },
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   const updateOrderStatus = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
       const { error } = await supabase
@@ -89,7 +81,7 @@ const OrdersManager = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       toast.success('Order status updated successfully');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to update order status');
     },
   });
@@ -106,6 +98,8 @@ const OrdersManager = () => {
       case 'rejected':
       case 'cancelled':
         return 'bg-red-500';
+      case 'payment_issue':
+        return 'bg-orange-500';
       default:
         return 'bg-gray-500';
     }
@@ -227,6 +221,40 @@ const OrdersManager = () => {
                     <Check className="h-4 w-4 mr-1" />
                     Mark Completed
                   </Button>
+                )}
+                {(order.status === 'pending' || order.status === 'payment_confirmed') && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateOrderStatus.mutate({ orderId: order.id, status: 'payment_issue' })}
+                    disabled={updateOrderStatus.isPending}
+                    className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    Payment Issue
+                  </Button>
+                )}
+                {order.status === 'payment_issue' && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => updateOrderStatus.mutate({ orderId: order.id, status: 'payment_confirmed' })}
+                      disabled={updateOrderStatus.isPending}
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Resolve Issue
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => updateOrderStatus.mutate({ orderId: order.id, status: 'cancelled' })}
+                      disabled={updateOrderStatus.isPending}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel Due to Issue
+                    </Button>
+                  </>
                 )}
               </div>
             </div>

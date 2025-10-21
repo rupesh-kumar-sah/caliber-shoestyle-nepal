@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
 
 export const useSiteSettings = (key: string) => {
   return useQuery({
@@ -22,14 +23,14 @@ export const useUpdateSiteSettings = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ key, value }: { key: string; value: any }) => {
+    mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
       const { data, error } = await supabase
         .from('site_settings')
-        .update({ value, updated_at: new Date().toISOString() })
+        .update({ value: value as Json, updated_at: new Date().toISOString() })
         .eq('key', key)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -38,8 +39,8 @@ export const useUpdateSiteSettings = () => {
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
       toast.success('Settings updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update settings');
+    onError: (error: unknown) => {
+      toast.error((error as Error).message || 'Failed to update settings');
     },
   });
 };

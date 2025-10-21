@@ -66,8 +66,8 @@ export const useAddToCart = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Added to cart');
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to add to cart');
+    onError: (error: unknown) => {
+      toast.error((error as Error).message || 'Failed to add to cart');
     },
   });
 };
@@ -90,8 +90,8 @@ export const useUpdateCartItem = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update cart');
+    onError: (error: unknown) => {
+      toast.error((error as Error).message || 'Failed to update cart');
     },
   });
 };
@@ -112,8 +112,8 @@ export const useRemoveFromCart = () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       toast.success('Removed from cart');
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to remove from cart');
+    onError: (error: unknown) => {
+      toast.error((error as Error).message || 'Failed to remove from cart');
     },
   });
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -12,6 +12,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, QrCode, CheckCircle } from 'lucide-react';
+import QRCode from 'qrcode';
 
 interface EsewaSettings {
   enabled: boolean;
@@ -30,6 +31,7 @@ const Checkout = () => {
   const [showQr, setShowQr] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState('');
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -37,11 +39,39 @@ const Checkout = () => {
     city: '',
   });
 
-  const subtotal = cartItems?.reduce((sum, item) => 
+  const subtotal = cartItems?.reduce((sum, item) =>
     sum + (item.product?.price || 0) * item.quantity, 0
   ) || 0;
   const shipping = 50;
   const total = subtotal + shipping;
+
+  // Generate QR code with payment information
+  const generateQRCode = useCallback(async (amount: number, orderId: string) => {
+    try {
+      const qrText = `esewa:${esewaSettings?.merchant_id || 'merchant'}?amt=${amount.toFixed(2)}&oid=${orderId}&desc=Order Payment&cur=NPR`;
+
+      const qrCodeDataURL = await QRCode.toDataURL(qrText, {
+        width: 320,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+
+      setQrCodeDataUrl(qrCodeDataURL);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      toast.error('Failed to generate QR code');
+    }
+  }, [esewaSettings?.merchant_id]);
+
+  // Generate QR code when order is created
+  useEffect(() => {
+    if (showQr && orderId && total > 0) {
+      generateQRCode(total, orderId);
+    }
+  }, [showQr, orderId, total, generateQRCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,8 +123,8 @@ const Checkout = () => {
       setShowQr(true);
       toast.success('Order created! Please scan the QR code to complete payment.');
       
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to place order');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Failed to place order');
     } finally {
       setLoading(false);
     }
@@ -119,8 +149,8 @@ const Checkout = () => {
       await clearCart.mutateAsync();
       toast.success('Payment recorded! Your order has been placed.');
       navigate('/orders');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to complete order');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Failed to complete order');
     }
   };
 
@@ -157,14 +187,24 @@ const Checkout = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex flex-col items-center gap-4 p-6 border rounded-lg bg-muted/50">
-                  <img 
-                    src={esewaSettings.image_url} 
-                    alt="eSewa QR Code" 
-                    className="w-80 h-80 object-contain border-2 border-border rounded"
-                  />
+                  {qrCodeDataUrl ? (
+                    <img
+                      src={qrCodeDataUrl}
+                      alt="eSewa Payment QR Code"
+                      className="w-80 h-80 object-contain border-2 border-border rounded"
+                    />
+                  ) : (
+                    <div className="w-80 h-80 flex items-center justify-center border-2 border-border rounded bg-muted">
+                      <div className="text-center">
+                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">Generating QR Code...</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="text-center">
                     <p className="text-2xl font-bold text-accent">रू {total.toFixed(2)}</p>
                     <p className="text-sm text-muted-foreground mt-1">Order ID: {orderId?.slice(0, 8)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Amount included in QR code</p>
                   </div>
                 </div>
 
@@ -211,8 +251,13 @@ const Checkout = () => {
                     Submit Payment
                   </Button>
                   
-                  <Button 
-                    onClick={() => setShowQr(false)}
+                  <Button
+                    onClick={() => {
+                      setShowQr(false);
+                      setQrCodeDataUrl('');
+                      setOrderId(null);
+                      setTransactionId('');
+                    }}
                     variant="outline"
                     className="w-full"
                   >

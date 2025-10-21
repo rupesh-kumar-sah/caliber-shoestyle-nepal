@@ -86,8 +86,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       toast.success('Account created! Please check your email.');
       navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Sign up failed');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Sign up failed');
       throw error;
     }
   };
@@ -103,8 +103,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       toast.success('Signed in successfully!');
       navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Sign in failed');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Sign in failed');
       throw error;
     }
   };
@@ -116,8 +116,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       toast.success('Signed out successfully');
       navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Sign out failed');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Sign out failed');
     }
   };
 
